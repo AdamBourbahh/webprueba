@@ -3,358 +3,115 @@ const { runQuery, getQuery, allQuery, initDatabase } = require('../config/databa
 // Datos iniciales basados en el contenido actual del frontend
 const initialData = {
   categories: [
-    {
-      id: 'get-started',
-      title: 'GET STARTED',
-      description: 'Introducción y conceptos básicos para comenzar',
-      order_index: 0
-    },
-    {
-      id: 'estructuras',
-      title: 'ESTRUCTURAS DE DATOS',
-      description: 'Estructuras fundamentales: arrays, listas, árboles, grafos',
-      order_index: 1
-    },
-    {
-      id: 'algoritmos',
-      title: 'ALGORITMOS',
-      description: 'Algoritmos esenciales: recursividad, DP, divide y vencerás',
-      order_index: 2
-    }
+    { id: 'get-started', title: 'GET STARTED', description: 'Primeros pasos en programación competitiva', order_index: 0 },
+    { id: 'estructuras', title: 'ESTRUCTURAS DE DATOS', description: 'Arrays, listas, árboles y más', order_index: 1 },
+    { id: 'algoritmos', title: 'ALGORITMOS', description: 'Algoritmos fundamentales', order_index: 2 }
   ],
-
+  
   pages: [
-    // GET STARTED
-    {
-      id: 'introduccion',
-      title: 'INTRODUCCIÓN',
-      description: 'Bienvenida al mundo de la programación competitiva',
-      category_id: 'get-started',
-      order_index: 0
-    },
-    {
-      id: 'plataformas',
-      title: 'PLATAFORMAS DE PRÁCTICA',
-      description: 'Conoce las principales plataformas de programación competitiva',
-      category_id: 'get-started',
-      order_index: 1
-    },
-
-    // ESTRUCTURAS DE DATOS
-    {
-      id: 'arrays-strings',
-      title: 'ARRAYS Y STRINGS',
-      description: 'Fundamentos de arrays y manipulación de strings',
-      category_id: 'estructuras',
-      order_index: 2
-    },
-    {
-      id: 'listas-enlazadas',
-      title: 'LISTAS ENLAZADAS',
-      description: 'Listas simples, dobles y circulares',
-      category_id: 'estructuras',
-      order_index: 3
-    },
-    {
-      id: 'pilas-colas',
-      title: 'PILAS Y COLAS',
-      description: 'Estructuras LIFO y FIFO fundamentales',
-      category_id: 'estructuras',
-      order_index: 4
-    },
-    {
-      id: 'arboles',
-      title: 'ÁRBOLES',
-      description: 'Árboles binarios, BST, AVL y más',
-      category_id: 'estructuras',
-      order_index: 5
-    },
-    {
-      id: 'grafos',
-      title: 'GRAFOS',
-      description: 'Representación y algoritmos en grafos',
-      category_id: 'estructuras',
-      order_index: 6
-    },
-
-    // ALGORITMOS
-    {
-      id: 'algo-introduccion',
-      title: 'INTRODUCCIÓN A ALGORITMOS',
-      description: 'Conceptos básicos y análisis de complejidad',
-      category_id: 'algoritmos',
-      order_index: 7
-    },
-    {
-      id: 'recursividad',
-      title: 'RECURSIVIDAD',
-      description: 'Técnicas recursivas y casos base',
-      category_id: 'algoritmos',
-      order_index: 8
-    },
-    {
-      id: 'divide-venceras',
-      title: 'DIVIDE Y VENCERÁS',
-      description: 'Paradigma divide y vencerás con ejemplos',
-      category_id: 'algoritmos',
-      order_index: 9
-    },
-    {
-      id: 'programacion-dinamica',
-      title: 'PROGRAMACIÓN DINÁMICA',
-      description: 'DP: memoización y programación bottom-up',
-      category_id: 'algoritmos',
-      order_index: 10
-    },
-    {
-      id: 'backtracking',
-      title: 'BACKTRACKING',
-      description: 'Exploración exhaustiva con vuelta atrás',
-      category_id: 'algoritmos',
-      order_index: 11
-    }
+    { id: 'introduccion', title: 'INTRODUCCIÓN', description: 'Bienvenida al mundo de la programación competitiva', category_id: 'get-started', order_index: 0 },
+    { id: 'plataformas', title: 'PLATAFORMAS', description: 'Conoce las principales plataformas de práctica', category_id: 'get-started', order_index: 1 },
+    { id: 'arrays-strings', title: 'ARRAYS Y STRINGS', description: 'Estructuras de datos básicas', category_id: 'estructuras', order_index: 0 },
+    { id: 'recursividad', title: 'RECURSIVIDAD', description: 'Técnica fundamental de programación', category_id: 'algoritmos', order_index: 0 }
   ],
-
+  
   sections: [
-    // INTRODUCCIÓN
-    {
-      id: 'intro-bienvenida',
-      page_id: 'introduccion',
-      title: 'Bienvenida al CPC UGR',
-      content: `¡Bienvenido/a al Club de Programación Competitiva de la Universidad de Granada! 👋
+    { 
+      id: 'intro-bienvenida', 
+      page_id: 'introduccion', 
+      title: 'Bienvenida al CPC UGR', 
+      content: `¡Bienvenido al Club de Programación Competitiva de la Universidad de Granada!
 
-Esta plataforma está diseñada para ayudarte a dominar los conceptos fundamentales de la programación competitiva, desde los algoritmos más básicos hasta las técnicas más avanzadas.
+En esta plataforma encontrarás todo lo necesario para iniciarte y mejorar en programación competitiva:
 
-## ¿Qué encontrarás aquí?
+- **Tutoriales paso a paso** desde nivel básico hasta avanzado
+- **Ejercicios prácticos** con evaluación automática
+- **Comunidad activa** de estudiantes y mentores
+- **Recursos curados** de las mejores fuentes
 
-- **Teoría clara y concisa**: Explicaciones paso a paso de conceptos fundamentales
-- **Ejemplos prácticos**: Código real que puedes ejecutar y modificar
-- **Ejercicios interactivos**: Practica directamente en la plataforma
-- **Seguimiento de progreso**: Ve tu avance en tiempo real
-- **Comunidad activa**: Aprende junto a otros estudiantes apasionados
+## ¿Qué es la programación competitiva?
 
-## Nuestra filosofía
+La programación competitiva es una actividad mental que consiste en resolver problemas algorítmicos bajo limitaciones de tiempo. Es como un deporte, pero usando el cerebro y el código.
 
-En el CPC UGR creemos que la programación competitiva es mucho más que resolver problemas: es una forma de entrenar el pensamiento lógico, aprender a estructurar soluciones eficientes y, por qué no, pasarlo bien mientras lo haces.`,
+### Beneficios principales:
+- Mejora tu capacidad de resolución de problemas
+- Te prepara para entrevistas técnicas
+- Desarrolla tu pensamiento lógico
+- Es divertido y adictivo
+
+¡Empecemos este viaje juntos!`,
       order_index: 0
     },
-    {
-      id: 'intro-como-empezar',
-      page_id: 'introduccion',
-      title: 'Cómo empezar',
-      content: `## Ruta de aprendizaje recomendada
+    { 
+      id: 'intro-primeros-pasos', 
+      page_id: 'introduccion', 
+      title: 'Primeros Pasos', 
+      content: `## Tu primer ejercicio
 
-Si eres nuevo en programación competitiva, te recomendamos seguir este orden:
+Antes de adentrarnos en teoría compleja, vamos a resolver un problema simple para familiarizarnos con la plataforma.
 
-### 1. **Fundamentos básicos**
-- Familiarízate con las estructuras de datos básicas (arrays, strings)
-- Aprende análisis de complejidad (Big O)
-- Practica problemas simples de implementación
+### Problema: Hello World
+Imprime "Hello, Competitive Programming!" en la salida estándar.
 
-### 2. **Estructuras de datos**
-- Domina arrays y strings completamente
-- Aprende listas enlazadas, pilas y colas
-- Estudia árboles y grafos básicos
+**Entrada:** Ninguna
+**Salida:** Una línea con el texto "Hello, Competitive Programming!"
 
-### 3. **Algoritmos fundamentales**
-- Recursividad y casos base
-- Algoritmos de búsqueda y ordenamiento
-- Técnicas básicas de optimización
+Este es el ejercicio más simple posible, pero te ayudará a entender cómo funciona nuestra plataforma de evaluación automática.
 
-### 4. **Técnicas avanzadas**
-- Programación dinámica
-- Divide y vencerás
-- Backtracking y poda
-
-## Consejos para el éxito
-
-- **Practica regularmente**: La consistencia es clave
-- **Entiende antes de memorizar**: Comprende el "por qué" detrás de cada algoritmo
-- **Participa en la comunidad**: Únete a nuestros eventos y concursos
-- **No te rindas**: Los problemas difíciles requieren tiempo y paciencia`,
+> **Consejo:** Asegúrate de que tu salida coincida exactamente con lo esperado, incluyendo mayúsculas y signos de puntuación.`,
       order_index: 1
     },
+    { 
+      id: 'arrays-introduccion', 
+      page_id: 'arrays-strings', 
+      title: 'Introducción a Arrays', 
+      content: `## ¿Qué son los Arrays?
 
-    // PLATAFORMAS
-    {
-      id: 'plataformas-intro',
-      page_id: 'plataformas',
-      title: 'Introducción a las plataformas',
-      content: `Las plataformas de programación competitiva son el lugar donde pondrás en práctica todo lo que aprendas. Cada una tiene sus características únicas y tipos de problemas específicos.
+Un array es una estructura de datos que almacena elementos del mismo tipo en posiciones consecutivas de memoria. Es una de las estructuras más fundamentales en programación.
 
-## ¿Por qué usar plataformas online?
-
-- **Evaluación automática**: Feedback inmediato de tus soluciones
-- **Problemas clasificados**: Desde principiante hasta experto
-- **Competiciones regulares**: Contests para medir tu progreso
-- **Comunidad global**: Aprende de programadores de todo el mundo
-- **Histórico de submissions**: Sigue tu evolución a lo largo del tiempo`,
-      order_index: 0
-    },
-    {
-      id: 'plataformas-codeforces',
-      page_id: 'plataformas',
-      title: 'Codeforces',
-      content: `## Codeforces - La plataforma más popular
-
-**URL**: [codeforces.com](https://codeforces.com)
-
-### Características principales:
-- **Contests regulares**: 2-3 concursos por semana
-- **Sistema de rating**: Desde Newbie (gris) hasta Tourist (rojo)
-- **Problemset extenso**: Miles de problemas clasificados por dificultad
-- **Editorial completo**: Explicaciones detalladas de las soluciones
-
-### Tipos de contest:
-- **Div. 1**: Para usuarios experimentados (rating ≥ 1900)
-- **Div. 2**: Para usuarios intermedios (rating < 1900)
-- **Div. 3**: Para principiantes (rating < 1600)
-- **Educational**: Enfoque pedagógico, ideales para aprender
-
-### Recomendaciones:
-- Empieza con problemas Div. 2 A y B
-- Participa en contests aunque no resuelvas todos los problemas
-- Lee los editoriales después de cada contest`,
-      order_index: 1
-    },
-    {
-      id: 'plataformas-atcoder',
-      page_id: 'plataformas',
-      title: 'AtCoder',
-      content: `## AtCoder - Calidad japonesa
-
-**URL**: [atcoder.jp](https://atcoder.jp)
-
-### Características:
-- **Problemas de alta calidad**: Muy bien pensados y testeados
-- **Contests semanales**: ABC (AtCoder Beginner Contest) cada sábado
-- **Sistema de colores**: Del gris al rojo, similar a Codeforces
-- **Editorials excelentes**: Explicaciones muy claras
-
-### Tipos de contest:
-- **ABC**: AtCoder Beginner Contest (ideal para empezar)
-- **ARC**: AtCoder Regular Contest (nivel intermedio)
-- **AGC**: AtCoder Grand Contest (nivel avanzado)
-
-### Por qué es especial:
-- Problemas muy educativos y progresivos
-- Testcases muy completos
-- Comunidad muy respetuosa`,
-      order_index: 2
-    },
-
-    // ARRAYS Y STRINGS
-    {
-      id: 'arrays-introduccion',
-      page_id: 'arrays-strings',
-      title: 'Introducción a Arrays',
-      content: `Los arrays son la estructura de datos más fundamental en programación competitiva. Un array es una colección de elementos del mismo tipo almacenados en posiciones contiguas de memoria.
-
-## Características principales:
-
+### Características importantes:
 - **Acceso aleatorio**: Puedes acceder a cualquier elemento en O(1)
-- **Tamaño fijo**: Una vez creado, el tamaño no puede cambiar (en arrays estáticos)
-- **Indexado**: Los elementos se acceden mediante índices (generalmente empezando en 0)
-- **Memoria contigua**: Los elementos están uno al lado del otro en memoria
+- **Tamaño fijo**: Una vez creado, su tamaño no cambia
+- **Índices**: Los elementos se acceden mediante índices (normalmente empezando en 0)
 
-## Declaración en C++:
-
+### Ejemplo básico en C++:
 \`\`\`cpp
-// Array estático
-int arr[100];  // Array de 100 enteros
-int arr[5] = {1, 2, 3, 4, 5};  // Inicialización
-
-// Vector (array dinámico)
-vector<int> v;  // Vector vacío
-vector<int> v(10);  // Vector de 10 elementos inicializados a 0
-vector<int> v = {1, 2, 3, 4, 5};  // Inicialización con valores
+int arr[5] = {1, 2, 3, 4, 5};
+cout << arr[0]; // Imprime 1
+cout << arr[4]; // Imprime 5
 \`\`\`
 
-## Operaciones básicas:
-
-\`\`\`cpp
-// Acceso
-int valor = arr[2];  // Obtener elemento en posición 2
-arr[2] = 10;         // Modificar elemento en posición 2
-
-// Recorrido
-for(int i = 0; i < n; i++) {
-    cout << arr[i] << " ";
-}
-
-// Con vector
-for(int x : v) {
-    cout << x << " ";
-}
-\`\`\``,
-      order_index: 0
-    },
-
-    // RECURSIVIDAD
-    {
-      id: 'recursividad-concepto',
-      page_id: 'recursividad',
-      title: 'Concepto de Recursividad',
-      content: `La recursividad es una técnica de programación donde una función se llama a sí misma para resolver un problema dividiéndolo en subproblemas más pequeños.
-
-## Componentes de la recursividad:
-
-### 1. **Caso base**
-La condición que detiene la recursión. Sin esto, tendríamos una recursión infinita.
-
-### 2. **Caso recursivo**
-La función se llama a sí misma con parámetros modificados.
-
-### 3. **Progreso hacia el caso base**
-Cada llamada recursiva debe acercarse al caso base.
-
-## Ejemplo clásico: Factorial
-
-\`\`\`cpp
-int factorial(int n) {
-    // Caso base
-    if (n <= 1) {
-        return 1;
-    }
-    
-    // Caso recursivo
-    return n * factorial(n - 1);
-}
-\`\`\`
-
-## Cómo funciona:
-- factorial(5) = 5 × factorial(4)
-- factorial(4) = 4 × factorial(3)  
-- factorial(3) = 3 × factorial(2)
-- factorial(2) = 2 × factorial(1)
-- factorial(1) = 1 (caso base)
-
-## Ventajas:
-- Código más limpio y legible
-- Natural para problemas que tienen estructura recursiva
-- Implementación directa de definiciones matemáticas
-
-## Desventajas:
-- Puede ser ineficiente (llamadas repetidas)
-- Uso de memoria adicional (stack de llamadas)
-- Posible stack overflow con recursiones muy profundas`,
+Los arrays son la base para muchos algoritmos y estructuras de datos más complejas.`,
       order_index: 0
     }
   ],
-
+  
   exercises: [
     {
       id: 'hello-world',
       page_id: 'introduccion',
       title: 'Hello World',
-      description: 'Tu primer programa: imprime "Hello, World!" en la consola.',
-      starter_code: '#include <iostream>\nusing namespace std;\n\nint main() {\n    // Tu código aquí\n    \n    return 0;\n}',
-      solution_code: '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}',
+      description: 'Tu primer ejercicio: imprime un mensaje de bienvenida.',
+      starter_code: `#include <iostream>
+using namespace std;
+
+int main() {
+    // Tu código aquí
+    
+    return 0;
+}`,
+      solution_code: `#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hello, Competitive Programming!" << endl;
+    return 0;
+}`,
       test_cases: [
         {
           input: '',
-          expected_output: 'Hello, World!',
-          description: 'Debe imprimir exactamente "Hello, World!"'
+          expected_output: 'Hello, Competitive Programming!',
+          description: 'Caso básico'
         }
       ],
       difficulty: 'easy',
@@ -362,27 +119,45 @@ int factorial(int n) {
       memory_limit: 64
     },
     {
-      id: 'suma-dos-numeros',
+      id: 'suma-simple',
       page_id: 'introduccion',
-      title: 'Suma de dos números',
-      description: 'Lee dos números enteros e imprime su suma.',
-      starter_code: '#include <iostream>\nusing namespace std;\n\nint main() {\n    int a, b;\n    // Tu código aquí\n    \n    return 0;\n}',
-      solution_code: '#include <iostream>\nusing namespace std;\n\nint main() {\n    int a, b;\n    cin >> a >> b;\n    cout << a + b << endl;\n    return 0;\n}',
+      title: 'Suma Simple',
+      description: 'Lee dos números enteros y muestra su suma.',
+      starter_code: `#include <iostream>
+using namespace std;
+
+int main() {
+    int a, b;
+    // Leer los números
+    
+    // Calcular y mostrar la suma
+    
+    return 0;
+}`,
+      solution_code: `#include <iostream>
+using namespace std;
+
+int main() {
+    int a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}`,
       test_cases: [
         {
-          input: '3 5',
+          input: '5 3',
           expected_output: '8',
-          description: 'Suma de 3 + 5 = 8'
+          description: 'Números positivos'
         },
         {
-          input: '-2 10',
-          expected_output: '8',
-          description: 'Suma de -2 + 10 = 8'
+          input: '-2 7',
+          expected_output: '5',
+          description: 'Un número negativo'
         },
         {
           input: '0 0',
           expected_output: '0',
-          description: 'Suma de 0 + 0 = 0'
+          description: 'Ambos cero'
         }
       ],
       difficulty: 'easy',
@@ -390,36 +165,198 @@ int factorial(int n) {
       memory_limit: 64
     },
     {
-      id: 'factorial-recursivo',
-      page_id: 'recursividad',
-      title: 'Factorial Recursivo',
-      description: 'Implementa una función recursiva para calcular el factorial de un número.',
-      starter_code: '#include <iostream>\nusing namespace std;\n\nint factorial(int n) {\n    // Tu implementación recursiva aquí\n}\n\nint main() {\n    int n;\n    cin >> n;\n    cout << factorial(n) << endl;\n    return 0;\n}',
-      solution_code: '#include <iostream>\nusing namespace std;\n\nint factorial(int n) {\n    if (n <= 1) return 1;\n    return n * factorial(n - 1);\n}\n\nint main() {\n    int n;\n    cin >> n;\n    cout << factorial(n) << endl;\n    return 0;\n}',
+      id: 'maximo-array',
+      page_id: 'arrays-strings',
+      title: 'Máximo en Array',
+      description: 'Encuentra el elemento máximo en un array de enteros.',
+      starter_code: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> arr(n);
+    
+    for(int i = 0; i < n; i++) {
+        cin >> arr[i];
+    }
+    
+    // Encuentra el máximo
+    
+    return 0;
+}`,
+      solution_code: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> arr(n);
+    
+    for(int i = 0; i < n; i++) {
+        cin >> arr[i];
+    }
+    
+    int maximo = *max_element(arr.begin(), arr.end());
+    cout << maximo << endl;
+    
+    return 0;
+}`,
       test_cases: [
         {
-          input: '5',
-          expected_output: '120',
-          description: '5! = 120'
+          input: '5\n1 3 7 2 5',
+          expected_output: '7',
+          description: 'Array simple'
         },
         {
+          input: '3\n-5 -1 -10',
+          expected_output: '-1',
+          description: 'Números negativos'
+        },
+        {
+          input: '1\n42',
+          expected_output: '42',
+          description: 'Un solo elemento'
+        }
+      ],
+      difficulty: 'easy',
+      time_limit: 1,
+      memory_limit: 64
+    },
+    {
+      id: 'fibonacci',
+      page_id: 'recursividad',
+      title: 'Fibonacci',
+      description: 'Calcula el n-ésimo número de Fibonacci.',
+      starter_code: `#include <iostream>
+using namespace std;
+
+// Función recursiva para calcular Fibonacci
+int fibonacci(int n) {
+    // Tu código aquí
+}
+
+int main() {
+    int n;
+    cin >> n;
+    cout << fibonacci(n) << endl;
+    return 0;
+}`,
+      solution_code: `#include <iostream>
+using namespace std;
+
+int fibonacci(int n) {
+    if (n <= 1) return n;
+    return fibonacci(n-1) + fibonacci(n-2);
+}
+
+int main() {
+    int n;
+    cin >> n;
+    cout << fibonacci(n) << endl;
+    return 0;
+}`,
+      test_cases: [
+        {
           input: '0',
-          expected_output: '1',
-          description: '0! = 1'
+          expected_output: '0',
+          description: 'F(0) = 0'
         },
         {
           input: '1',
           expected_output: '1',
-          description: '1! = 1'
+          description: 'F(1) = 1'
         },
         {
-          input: '7',
-          expected_output: '5040',
-          description: '7! = 5040'
+          input: '5',
+          expected_output: '5',
+          description: 'F(5) = 5'
+        },
+        {
+          input: '10',
+          expected_output: '55',
+          description: 'F(10) = 55'
         }
       ],
       difficulty: 'medium',
       time_limit: 2,
+      memory_limit: 64
+    },
+    {
+      id: 'palindromo',
+      page_id: 'arrays-strings',
+      title: 'Verificar Palíndromo',
+      description: 'Determina si una cadena es un palíndromo (se lee igual al derecho y al revés).',
+      starter_code: `#include <iostream>
+#include <string>
+using namespace std;
+
+bool esPalindromo(string s) {
+    // Tu código aquí
+}
+
+int main() {
+    string palabra;
+    cin >> palabra;
+    
+    if (esPalindromo(palabra)) {
+        cout << "Si" << endl;
+    } else {
+        cout << "No" << endl;
+    }
+    
+    return 0;
+}`,
+      solution_code: `#include <iostream>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+bool esPalindromo(string s) {
+    string reversed = s;
+    reverse(reversed.begin(), reversed.end());
+    return s == reversed;
+}
+
+int main() {
+    string palabra;
+    cin >> palabra;
+    
+    if (esPalindromo(palabra)) {
+        cout << "Si" << endl;
+    } else {
+        cout << "No" << endl;
+    }
+    
+    return 0;
+}`,
+      test_cases: [
+        {
+          input: 'aba',
+          expected_output: 'Si',
+          description: 'Palíndromo simple'
+        },
+        {
+          input: 'racecar',
+          expected_output: 'Si',
+          description: 'Palíndromo más largo'
+        },
+        {
+          input: 'hello',
+          expected_output: 'No',
+          description: 'No es palíndromo'
+        },
+        {
+          input: 'a',
+          expected_output: 'Si',
+          description: 'Una sola letra'
+        }
+      ],
+      difficulty: 'easy',
+      time_limit: 1,
       memory_limit: 64
     }
   ]

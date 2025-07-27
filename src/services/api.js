@@ -1,316 +1,243 @@
-// Configuración base de la API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// Configuración de API para producción y desarrollo
+const isDevelopment = import.meta.env.MODE === 'development';
+const isEmulatorMode = window.location.hostname === 'localhost' && isDevelopment;
 
-// Cliente HTTP base con configuración para cookies
-class ApiClient {
-  constructor() {
-    this.baseURL = API_BASE_URL;
+// URLs de la API
+const API_CONFIG = {
+  // Emuladores locales (cuando se ejecuta firebase emulators:start)
+  emulator: 'http://localhost:5001/cpcugr/us-central1/api/api',
+  
+  // Desarrollo con backend remoto
+  development: import.meta.env.VITE_API_URL_DEV || 'http://localhost:3001/api',
+  
+  // Producción
+  production: import.meta.env.VITE_API_URL || 'https://us-central1-tu-proyecto.cloudfunctions.net/api/api'
+};
+
+// Determinar URL base
+const getBaseURL = () => {
+  if (isEmulatorMode) {
+    console.log('🧪 Modo emulador: usando Functions local');
+    return API_CONFIG.emulator;
   }
+  
+  if (isDevelopment) {
+    console.log('🔧 Modo desarrollo: usando backend remoto o local');
+    return API_CONFIG.development;
+  }
+  
+  console.log('🚀 Modo producción: usando Firebase Functions');
+  return API_CONFIG.production;
+};
 
-  async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
+const BASE_URL = getBaseURL();
+
+// Helper para hacer requests
+const apiRequest = async (endpoint, options = {}) => {
+  const url = `${BASE_URL}${endpoint}`;
+  
+  const defaultOptions = {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    credentials: 'include', // Para cookies de sesión
+  };
+
+  const config = { ...defaultOptions, ...options };
+
+  try {
+    console.log(`📡 API Request: ${config.method || 'GET'} ${url}`);
     
-    const config = {
-      credentials: 'include', // Importante para enviar cookies de sesión
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
-    };
-
-    // Si hay un body y no es FormData, convertir a JSON
-    if (config.body && !(config.body instanceof FormData)) {
-      config.body = JSON.stringify(config.body);
+    const response = await fetch(url, config);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Error de red' }));
+      throw new Error(errorData.error || `HTTP ${response.status}`);
     }
 
-    // Si es FormData, quitar el Content-Type para que el browser lo setee automáticamente
-    if (config.body instanceof FormData) {
-      delete config.headers['Content-Type'];
-    }
-
-    try {
-      const response = await fetch(url, config);
-      
-      // Si la respuesta no es ok, lanzar error con detalles
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || errorData.error || `HTTP ${response.status}`);
-      }
-
-      // Si no hay contenido, devolver true
-      if (response.status === 204) {
-        return true;
-      }
-
-      // Intentar parsear JSON, si falla devolver texto
-      try {
-        return await response.json();
-      } catch {
-        return await response.text();
-      }
-    } catch (error) {
-      console.error(`API Error [${options.method || 'GET'} ${endpoint}]:`, error);
-      throw error;
-    }
-  }
-
-  // Métodos HTTP shortcuts
-  get(endpoint, options = {}) {
-    return this.request(endpoint, { ...options, method: 'GET' });
-  }
-
-  post(endpoint, body, options = {}) {
-    return this.request(endpoint, { ...options, method: 'POST', body });
-  }
-
-  put(endpoint, body, options = {}) {
-    return this.request(endpoint, { ...options, method: 'PUT', body });
-  }
-
-  delete(endpoint, options = {}) {
-    return this.request(endpoint, { ...options, method: 'DELETE' });
-  }
-}
-
-const apiClient = new ApiClient();
-
-// === SERVICIOS DE AUTENTICACIÓN ===
-export const authService = {
-  // Verificar estado de autenticación
-  async getStatus() {
-    return apiClient.get('/auth/status');
-  },
-
-  // Registro de usuario
-  async register(userData) {
-    return apiClient.post('/auth/register', userData);
-  },
-
-  // Login
-  async login(credentials) {
-    return apiClient.post('/auth/login', credentials);
-  },
-
-  // Logout
-  async logout() {
-    return apiClient.post('/auth/logout');
-  },
-
-  // Obtener perfil
-  async getProfile() {
-    return apiClient.get('/auth/profile');
-  },
-
-  // Actualizar perfil
-  async updateProfile(profileData) {
-    return apiClient.put('/auth/profile', profileData);
-  },
-
-  // Cambiar contraseña
-  async changePassword(passwordData) {
-    return apiClient.put('/auth/change-password', passwordData);
+    const data = await response.json();
+    console.log(`✅ API Response: ${url}`, data);
+    return data;
+  } catch (error) {
+    console.error(`❌ API Error: ${url}`, error);
+    throw error;
   }
 };
 
-// === SERVICIOS DEL CMS ===
+// Health check para verificar conectividad
+export const healthCheck = async () => {
+  try {
+    const response = await apiRequest('/health');
+    return { 
+      available: true, 
+      ...response,
+      mode: isEmulatorMode ? 'emulator' : (isDevelopment ? 'development' : 'production')
+    };
+  } catch (error) {
+    console.warn('Backend no disponible:', error.message);
+    return { 
+      available: false, 
+      error: error.message,
+      mode: isEmulatorMode ? 'emulator' : (isDevelopment ? 'development' : 'production')
+    };
+  }
+};
+
+// Servicios de CMS
 export const cmsService = {
-  // Obtener toda la estructura de contenido
+  // Obtener contenido completo
   async getContent() {
-    return apiClient.get('/cms/content');
+    return apiRequest('/cms/content');
   },
 
   // Obtener página específica
   async getPage(pageId) {
-    return apiClient.get(`/cms/pages/${pageId}`);
+    return apiRequest(`/cms/pages/${pageId}`);
   },
 
-  // Crear nueva página (admin)
+  // Crear nueva página
   async createPage(pageData) {
-    return apiClient.post('/cms/pages', pageData);
+    return apiRequest('/cms/pages', {
+      method: 'POST',
+      body: JSON.stringify(pageData),
+    });
   },
 
-  // Actualizar página (admin)
+  // Actualizar página
   async updatePage(pageId, pageData) {
-    return apiClient.put(`/cms/pages/${pageId}`, pageData);
+    return apiRequest(`/cms/pages/${pageId}`, {
+      method: 'PUT',
+      body: JSON.stringify(pageData),
+    });
   },
 
-  // Eliminar página (admin)
+  // Eliminar página
   async deletePage(pageId) {
-    return apiClient.delete(`/cms/pages/${pageId}`);
+    return apiRequest(`/cms/pages/${pageId}`, {
+      method: 'DELETE',
+    });
   },
 
-  // Crear nueva sección (admin)
+  // Crear sección
   async createSection(sectionData) {
-    return apiClient.post('/cms/sections', sectionData);
+    return apiRequest('/cms/sections', {
+      method: 'POST',
+      body: JSON.stringify(sectionData),
+    });
   },
 
-  // Actualizar sección (admin)
+  // Actualizar sección
   async updateSection(sectionId, sectionData) {
-    return apiClient.put(`/cms/sections/${sectionId}`, sectionData);
+    return apiRequest(`/cms/sections/${sectionId}`, {
+      method: 'PUT',
+      body: JSON.stringify(sectionData),
+    });
   },
 
-  // Eliminar sección (admin)
+  // Eliminar sección
   async deleteSection(sectionId) {
-    return apiClient.delete(`/cms/sections/${sectionId}`);
+    return apiRequest(`/cms/sections/${sectionId}`, {
+      method: 'DELETE',
+    });
   },
 
-  // Subir archivo Markdown (admin)
-  async uploadMarkdown(file, pageId, sectionTitle) {
-    const formData = new FormData();
-    formData.append('markdown', file);
-    if (pageId) formData.append('page_id', pageId);
-    if (sectionTitle) formData.append('section_title', sectionTitle);
-
-    return apiClient.post('/cms/upload-markdown', formData);
-  },
-
-  // Convertir Markdown a HTML
-  async convertMarkdown(markdown) {
-    return apiClient.post('/cms/convert-markdown', { markdown });
-  },
-
-  // Exportar contenido (admin)
+  // Exportar contenido
   async exportContent() {
-    return apiClient.get('/cms/export');
-  },
-
-  // Importar contenido (admin)
-  async importContent(contentData) {
-    return apiClient.post('/cms/import', contentData);
-  },
-
-  // Obtener categorías
-  async getCategories() {
-    return apiClient.get('/cms/categories');
-  },
-
-  // Crear categoría (admin)
-  async createCategory(categoryData) {
-    return apiClient.post('/cms/categories', categoryData);
+    return apiRequest('/cms/export');
   }
 };
 
-// === SERVICIOS DE EJERCICIOS DE CÓDIGO ===
-export const codeService = {
-  // Obtener ejercicios
-  async getExercises(filters = {}) {
-    const params = new URLSearchParams(filters).toString();
-    return apiClient.get(`/code/exercises${params ? '?' + params : ''}`);
+// Servicios de autenticación
+export const authService = {
+  // Registro
+  async register(userData) {
+    return apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
   },
 
-  // Obtener ejercicio específico
-  async getExercise(exerciseId) {
-    return apiClient.get(`/code/exercises/${exerciseId}`);
+  // Login
+  async login(credentials) {
+    return apiRequest('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
   },
 
-  // Crear ejercicio (admin)
-  async createExercise(exerciseData) {
-    return apiClient.post('/code/exercises', exerciseData);
+  // Logout
+  async logout() {
+    return apiRequest('/auth/logout', {
+      method: 'POST',
+    });
   },
 
-  // Actualizar ejercicio (admin)
-  async updateExercise(exerciseId, exerciseData) {
-    return apiClient.put(`/code/exercises/${exerciseId}`, exerciseData);
+  // Obtener usuario actual
+  async getCurrentUser(userId) {
+    return apiRequest(`/auth/me?userId=${userId}`);
   },
 
-  // Enviar código para evaluación
-  async submitCode(submissionData) {
-    return apiClient.post('/code/submit', submissionData);
+  // Actualizar perfil
+  async updateProfile(userId, profileData) {
+    return apiRequest('/auth/profile', {
+      method: 'PUT',
+      headers: {
+        'user-id': userId
+      },
+      body: JSON.stringify(profileData),
+    });
   },
 
-  // Obtener estado de submission
-  async getSubmission(submissionId) {
-    return apiClient.get(`/code/submissions/${submissionId}`);
-  },
-
-  // Obtener historial de submissions
-  async getSubmissions(filters = {}) {
-    const params = new URLSearchParams(filters).toString();
-    return apiClient.get(`/code/submissions${params ? '?' + params : ''}`);
+  // Cambiar contraseña
+  async changePassword(userId, passwordData) {
+    return apiRequest('/auth/change-password', {
+      method: 'PUT',
+      headers: {
+        'user-id': userId
+      },
+      body: JSON.stringify(passwordData),
+    });
   }
 };
 
-// === SERVICIOS DE PROGRESO ===
+// Servicios de progreso (placeholder)
 export const progressService = {
-  // Obtener progreso completo del usuario
-  async getUserProgress() {
-    return apiClient.get('/progress/user-progress');
+  async getUserProgress(userId) {
+    // TODO: Implementar cuando migremos progress.js
+    return { progress: {} };
   },
 
-  // Marcar página/sección como completada
-  async markComplete(progressData) {
-    return apiClient.post('/progress/complete', progressData);
-  },
-
-  // Obtener progreso de página específica
-  async getPageProgress(pageId) {
-    return apiClient.get(`/progress/page/${pageId}`);
-  },
-
-  // Resetear progreso (auth requerida)
-  async resetProgress() {
-    return apiClient.delete('/progress/reset');
-  },
-
-  // Migrar progreso de cookie a BD
-  async migrateFromCookie() {
-    return apiClient.post('/progress/migrate-from-cookie');
-  },
-
-  // Obtener estadísticas globales
-  async getGlobalStats() {
-    return apiClient.get('/progress/stats/global');
-  },
-
-  // Obtener leaderboard
-  async getLeaderboard(limit = 20) {
-    return apiClient.get(`/progress/leaderboard?limit=${limit}`);
+  async updateProgress(userId, pageId, progressData) {
+    // TODO: Implementar cuando migremos progress.js
+    return { success: true };
   }
 };
 
-// === UTILIDADES ===
-export const apiUtils = {
-  // Verificar si el backend está disponible
-  async healthCheck() {
-    try {
-      return await apiClient.get('/health');
-    } catch (error) {
-      console.error('Backend no disponible:', error);
-      return false;
-    }
+// Servicios de código (placeholder)
+export const codeService = {
+  async submitCode(exerciseId, code, language) {
+    // TODO: Implementar cuando migremos code.js
+    return { 
+      submissionId: 'demo-' + Date.now(),
+      status: 'queued'
+    };
   },
 
-  // Obtener información del servidor
-  async getServerInfo() {
-    return apiClient.get('/health');
+  async getSubmission(submissionId) {
+    // TODO: Implementar cuando migremos code.js
+    return {
+      id: submissionId,
+      status: 'completed',
+      result: 'accepted',
+      score: 100
+    };
   }
 };
 
-// Hook para manejar errores de API de forma consistente
-export const useApiError = () => {
-  const handleError = (error) => {
-    console.error('API Error:', error);
-    
-    // Aquí puedes agregar lógica para mostrar notificaciones, redirects, etc.
-    if (error.message.includes('401') || error.message.includes('No autorizado')) {
-      // Usuario no autenticado, redirigir al login
-      window.location.hash = '#login';
-    }
-    
-    return error.message || 'Error desconocido';
-  };
-
-  return { handleError };
-};
-
-// Exportar cliente base para casos especiales
-export { apiClient };
-
-export default {
-  auth: authService,
-  cms: cmsService,
-  code: codeService,
-  progress: progressService,
-  utils: apiUtils
-}; 
+// Debug info
+console.log('🔧 API Configuration:', {
+  baseURL: BASE_URL,
+  mode: isEmulatorMode ? 'emulator' : (isDevelopment ? 'development' : 'production'),
+  environment: import.meta.env.MODE
+}); 

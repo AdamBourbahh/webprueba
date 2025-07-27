@@ -10,7 +10,9 @@
     "setup": "npm install && npm run init-data",
     "test": "jest",
     "lint": "eslint .",
-    "clean": "rm -rf temp/* uploads/* database/*"
+    "clean": "rm -rf temp/* uploads/* database/*",
+    "migrate-to-firebase": "node scripts/migrate-to-firestore.js",
+    "prepare-firebase": "npm run init-data && npm run migrate-to-firebase"
   },
   "dependencies": {
     "express": "^4.18.2",
