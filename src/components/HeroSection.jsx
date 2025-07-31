@@ -1,8 +1,8 @@
 const HeroSection = () => {
   return (
-    <section className="min-h-screen flex items-center justify-start relative overflow-hidden px-4 sm:px-6 lg:px-8">
-      {/* Glass/Crystal Background Effect */}
-      <div className="absolute inset-0 bg-pure-white dark:bg-black">
+    <section className="min-h-screen flex items-center justify-start relative px-4 sm:px-6 lg:px-8">
+      {/* Background Effects - FIXED like in Comparte */}
+      <div className="fixed inset-0 bg-pure-white dark:bg-black pointer-events-none">
         {/* Fine grain texture for glass effect */}
         <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.08]" 
              style={{
@@ -18,56 +18,64 @@ const HeroSection = () => {
                backgroundSize: '500px 500px'
              }}>
         </div>
-      </div>
-      
-      {/* Gradient Cloud Effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Light mode clouds */}
-        <div className="dark:hidden">
-          {/* Large diffused gradient blob - top center */}
-          <div className="absolute -top-48 left-1/2 -translate-x-1/2 w-96 h-96 sm:w-[600px] sm:h-[600px] lg:w-[800px] lg:h-[800px] bg-gradient-radial from-warm-orange/30 via-warm-pink/20 to-transparent blur-3xl animate-cloud-glow"></div>
-          
-          {/* Medium gradient blob - center left */}
-          <div className="absolute top-1/3 -left-32 w-80 h-80 sm:w-[500px] sm:h-[500px] bg-gradient-radial from-warm-red/25 via-warm-orange/15 to-transparent blur-2xl animate-cloud-glow" style={{animationDelay: '1s'}}></div>
-          
-          {/* Small gradient blob - bottom center */}
-          <div className="absolute bottom-20 left-1/4 w-64 h-64 sm:w-[400px] sm:h-[400px] bg-gradient-radial from-warm-pink/35 via-warm-red/20 to-transparent blur-xl animate-cloud-glow" style={{animationDelay: '2s'}}></div>
-          
-          {/* Additional atmospheric effect */}
-          <div className="absolute top-1/2 left-1/3 w-72 h-72 sm:w-[450px] sm:h-[450px] bg-gradient-radial from-warm-orange/40 via-transparent to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '0.5s'}}></div>
-          
-          {/* Extra large background cloud */}
-          <div className="absolute top-0 left-0 w-[1000px] h-[1000px] bg-gradient-radial from-warm-pink/20 via-warm-orange/12 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '1.5s'}}></div>
-          
-          {/* Right side gradient for balance */}
-          <div className="absolute top-1/4 right-0 w-[600px] h-[600px] bg-gradient-radial from-warm-red/22 via-warm-pink/12 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '3s'}}></div>
-          
-          {/* Extra warm accent - bottom right */}
-          <div className="absolute bottom-0 right-1/3 w-[500px] h-[500px] bg-gradient-radial from-warm-orange/35 via-warm-pink/18 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '2.5s'}}></div>
-        </div>
+        
+        {/* Gradient Cloud Effects */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Light mode clouds */}
+          <div className="dark:hidden">
+            {/* Large diffused gradient blob - top center */}
+            <div className="absolute -top-48 left-1/2 -translate-x-1/2 w-96 h-96 sm:w-[600px] sm:h-[600px] lg:w-[800px] lg:h-[800px] bg-gradient-radial from-warm-orange/30 via-warm-pink/20 to-transparent blur-3xl animate-cloud-glow"></div>
+            
+            {/* Medium gradient blob - center left */}
+            <div className="absolute top-1/3 -left-32 w-80 h-80 sm:w-[500px] sm:h-[500px] bg-gradient-radial from-warm-red/25 via-warm-orange/15 to-transparent blur-2xl animate-cloud-glow" style={{animationDelay: '1s'}}></div>
+            
+            {/* Small gradient blob - bottom center */}
+            <div className="absolute bottom-20 left-1/4 w-64 h-64 sm:w-[400px] sm:h-[400px] bg-gradient-radial from-warm-pink/35 via-warm-red/20 to-transparent blur-xl animate-cloud-glow" style={{animationDelay: '2s'}}></div>
+            
+            {/* Additional atmospheric effect */}
+            <div className="absolute top-1/2 left-1/3 w-72 h-72 sm:w-[450px] sm:h-[450px] bg-gradient-radial from-warm-orange/40 via-transparent to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '0.5s'}}></div>
+            
+            {/* Extra large background cloud */}
+            <div className="absolute top-0 left-0 w-[1000px] h-[1000px] bg-gradient-radial from-warm-pink/20 via-warm-orange/12 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '1.5s'}}></div>
+            
+            {/* Right side gradient for balance */}
+            <div className="absolute top-1/4 right-0 w-[600px] h-[600px] bg-gradient-radial from-warm-red/22 via-warm-pink/12 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '3s'}}></div>
+            
+            {/* Extra warm accent - bottom right */}
+            <div className="absolute bottom-0 right-1/3 w-[500px] h-[500px] bg-gradient-radial from-warm-orange/35 via-warm-pink/18 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '2.5s'}}></div>
+            
+            {/* ADDITIONAL RIGHT COVERAGE */}
+            <div className="absolute top-0 right-0 w-[100vw] h-full bg-gradient-radial from-warm-red/15 via-warm-orange/8 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '4s'}}></div>
+            <div className="absolute inset-y-0 right-0 w-[50vw] bg-gradient-radial from-warm-pink/20 via-warm-red/10 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '5s'}}></div>
+          </div>
 
-        {/* Dark mode clouds - ONLY WHITE */}
-        <div className="hidden dark:block">
-          {/* Large diffused gradient blob - top center */}
-          <div className="absolute -top-48 left-1/2 -translate-x-1/2 w-96 h-96 sm:w-[600px] sm:h-[600px] lg:w-[800px] lg:h-[800px] bg-gradient-radial from-white/20 via-white/10 to-transparent blur-3xl animate-cloud-glow"></div>
-          
-          {/* Medium gradient blob - center left */}
-          <div className="absolute top-1/3 -left-32 w-80 h-80 sm:w-[500px] sm:h-[500px] bg-gradient-radial from-white/18 via-white/8 to-transparent blur-2xl animate-cloud-glow" style={{animationDelay: '1s'}}></div>
-          
-          {/* Small gradient blob - bottom center */}
-          <div className="absolute bottom-20 left-1/4 w-64 h-64 sm:w-[400px] sm:h-[400px] bg-gradient-radial from-white/25 via-white/12 to-transparent blur-xl animate-cloud-glow" style={{animationDelay: '2s'}}></div>
-          
-          {/* Additional atmospheric effect */}
-          <div className="absolute top-1/2 left-1/3 w-72 h-72 sm:w-[450px] sm:h-[450px] bg-gradient-radial from-white/30 via-transparent to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '0.5s'}}></div>
-          
-          {/* Extra large background cloud */}
-          <div className="absolute top-0 left-0 w-[1000px] h-[1000px] bg-gradient-radial from-white/15 via-white/6 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '1.5s'}}></div>
-          
-          {/* Right side gradient for balance */}
-          <div className="absolute top-1/4 right-0 w-[600px] h-[600px] bg-gradient-radial from-white/22 via-white/10 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '3s'}}></div>
-          
-          {/* Extra warm accent - bottom right */}
-          <div className="absolute bottom-0 right-1/3 w-[500px] h-[500px] bg-gradient-radial from-white/16 via-white/6 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '2.5s'}}></div>
+          {/* Dark mode clouds - ONLY WHITE */}
+          <div className="hidden dark:block">
+            {/* Large diffused gradient blob - top center */}
+            <div className="absolute -top-48 left-1/2 -translate-x-1/2 w-96 h-96 sm:w-[600px] sm:h-[600px] lg:w-[800px] lg:h-[800px] bg-gradient-radial from-white/20 via-white/10 to-transparent blur-3xl animate-cloud-glow"></div>
+            
+            {/* Medium gradient blob - center left */}
+            <div className="absolute top-1/3 -left-32 w-80 h-80 sm:w-[500px] sm:h-[500px] bg-gradient-radial from-white/18 via-white/8 to-transparent blur-2xl animate-cloud-glow" style={{animationDelay: '1s'}}></div>
+            
+            {/* Small gradient blob - bottom center */}
+            <div className="absolute bottom-20 left-1/4 w-64 h-64 sm:w-[400px] sm:h-[400px] bg-gradient-radial from-white/25 via-white/12 to-transparent blur-xl animate-cloud-glow" style={{animationDelay: '2s'}}></div>
+            
+            {/* Additional atmospheric effect */}
+            <div className="absolute top-1/2 left-1/3 w-72 h-72 sm:w-[450px] sm:h-[450px] bg-gradient-radial from-white/30 via-transparent to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '0.5s'}}></div>
+            
+            {/* Extra large background cloud */}
+            <div className="absolute top-0 left-0 w-[1000px] h-[1000px] bg-gradient-radial from-white/15 via-white/6 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '1.5s'}}></div>
+            
+            {/* Right side gradient for balance */}
+            <div className="absolute top-1/4 right-0 w-[600px] h-[600px] bg-gradient-radial from-white/22 via-white/10 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '3s'}}></div>
+            
+            {/* Extra warm accent - bottom right */}
+            <div className="absolute bottom-0 right-1/3 w-[500px] h-[500px] bg-gradient-radial from-white/16 via-white/6 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '2.5s'}}></div>
+            
+            {/* ADDITIONAL RIGHT COVERAGE */}
+            <div className="absolute top-0 right-0 w-[100vw] h-full bg-gradient-radial from-white/12 via-white/6 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '4s'}}></div>
+            <div className="absolute inset-y-0 right-0 w-[50vw] bg-gradient-radial from-white/15 via-white/8 to-transparent blur-3xl animate-cloud-glow" style={{animationDelay: '5s'}}></div>
+          </div>
         </div>
       </div>
 

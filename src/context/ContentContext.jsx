@@ -1,367 +1,182 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { cmsService, progressService } from '../services/api';
+import React, { createContext, useContext, useMemo, useState, useCallback } from 'react';
+import { staticContent } from '../data/staticContent.js';
 
 const ContentContext = createContext();
 
 export const useContent = () => {
   const context = useContext(ContentContext);
   if (!context) {
-    throw new Error('useContent debe ser usado dentro de un ContentProvider');
+    throw new Error('useContent debe usarse dentro de ContentProvider');
   }
   return context;
 };
 
-// Datos por defecto como fallback si el backend no está disponible
-const defaultContent = {
-  navigationSections: [
-    {
-      id: 'get-started',
-      title: 'GET STARTED',
-      items: [
-        { id: 'introduccion', title: 'Introducción' },
-        { id: 'plataformas', title: 'Plataformas' }
-      ]
-    },
-    {
-      id: 'estructuras',
-      title: 'ESTRUCTURAS DE DATOS',
-      items: [
-        { id: 'arrays-strings', title: 'Arrays y strings' },
-        { id: 'listas-enlazadas', title: 'Listas enlazadas' },
-        { id: 'pilas-colas', title: 'Pilas y colas' },
-        { id: 'arboles', title: 'Árboles' },
-        { id: 'grafos', title: 'Grafos' }
-      ]
-    },
-    {
-      id: 'algoritmos',
-      title: 'ALGORITMOS',
-      items: [
-        { id: 'algo-introduccion', title: 'Introducción' },
-        { id: 'recursividad', title: 'Recursividad' },
-        { id: 'divide-venceras', title: 'Divide y vencerás' },
-        { id: 'programacion-dinamica', title: 'Programación dinámica' },
-        { id: 'backtracking', title: 'Backtracking' }
-      ]
-    }
-  ],
-  learningGuide: [
-    { id: 'introduccion', title: 'Introducción', order: 1 },
-    { id: 'arrays-strings', title: 'Arrays y Strings', order: 2 },
-    { id: 'recursividad', title: 'Recursividad', order: 3 },
-    { id: 'algoritmos-busqueda', title: 'Algoritmos de búsqueda', order: 4 },
-    { id: 'programacion-dinamica', title: 'Programación Dinámica', order: 5 }
-  ],
-  pageContent: {
-    'introduccion': {
-      title: 'INTRODUCCIÓN',
-      sections: [
-        {
-          id: 'intro',
-          title: 'Introducción',
-          content: '¡Bienvenido al Club de Programación UGR! Cargando contenido...'
-        }
-      ]
-    }
-  }
+// Mapeo de secciones a archivos markdown
+const sectionToMarkdownMap = {
+  'arrays': { category: 'estructuras', file: 'arrays' },
+  'sets': { category: 'estructuras', file: 'sets' },
+  'maps': { category: 'estructuras', file: 'maps' },
+  'trees': { category: 'estructuras', file: 'trees' },
+  'sorting': { category: 'algoritmos', file: 'sorting' },
+  'dp': { category: 'algoritmos', file: 'dp' },
+  'introduccion': { category: 'introduccion', file: 'que-es' }
 };
 
 export const ContentProvider = ({ children }) => {
-  const [content, setContent] = useState(defaultContent);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isBackendAvailable, setIsBackendAvailable] = useState(false);
-
-  // Cargar contenido desde el backend
-  const loadContent = async () => {
+  const [markdownCache, setMarkdownCache] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Función para cargar contenido markdown
+  const loadMarkdownContent = useCallback(async (sectionKey) => {
+    if (markdownCache[sectionKey]) {
+      return markdownCache[sectionKey];
+    }
+    
+    const markdownInfo = sectionToMarkdownMap[sectionKey];
+    if (!markdownInfo) {
+      return null;
+    }
+    
     try {
-      setLoading(true);
-      setError(null);
-
-      const backendContent = await cmsService.getContent();
-      setContent(backendContent);
-      setIsBackendAvailable(true);
-
-      console.log('✅ Contenido cargado desde el backend');
-    } catch (err) {
-      console.warn('⚠️ Backend no disponible, usando contenido local:', err.message);
+      setIsLoading(true);
+      const response = await fetch(`/api/content/${markdownInfo.category}/${markdownInfo.file}`);
       
-      // Intentar cargar desde localStorage como fallback
-      const savedContent = localStorage.getItem('cpc-cms-content');
-      if (savedContent) {
-        try {
-          const localContent = JSON.parse(savedContent);
-          setContent(localContent);
-          console.log('📦 Contenido cargado desde localStorage');
-        } catch (parseErr) {
-          console.error('Error parsing localStorage content:', parseErr);
-          setContent(defaultContent);
-        }
-      } else {
-        setContent(defaultContent);
+      if (!response.ok) {
+        console.warn(`No se encontró contenido markdown para ${sectionKey}, usando contenido estático`);
+        return null;
       }
       
-      setIsBackendAvailable(false);
-      setError(err.message);
+      const data = await response.json();
+      
+      // Cachear el resultado
+      setMarkdownCache(prev => ({
+        ...prev,
+        [sectionKey]: data.content
+      }));
+      
+      return data.content;
+    } catch (error) {
+      console.error(`Error cargando contenido markdown para ${sectionKey}:`, error);
+      return null;
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  };
+  }, [markdownCache]);
 
-  // Cargar contenido al montar el componente
-  useEffect(() => {
-    loadContent();
-  }, []);
+  // Funciones de utilidad memoizadas
+  const contextValue = useMemo(() => {
+    const { pages = [], categories = [] } = staticContent;
 
-  // Guardar en localStorage cuando el contenido cambie (fallback)
-  useEffect(() => {
-    if (!loading && content) {
-      localStorage.setItem('cpc-cms-content', JSON.stringify(content));
-    }
-  }, [content, loading]);
-
-  // === FUNCIONES DE GESTIÓN DE CONTENIDO (ADMIN) ===
-
-  const updatePageContent = async (pageId, newPageContent) => {
-    if (isBackendAvailable) {
-      try {
-        await cmsService.updatePage(pageId, newPageContent);
-        await loadContent(); // Recargar desde backend
-      } catch (err) {
-        console.error('Error updating page:', err);
-        // Fallback: actualizar localmente
-        updatePageContentLocal(pageId, newPageContent);
+    // Función mejorada para obtener página con contenido markdown
+    const getPageWithMarkdown = async (pageId) => {
+      const page = pages.find(page => page.id === pageId);
+      if (!page) return null;
+      
+      // Si es la página de estructuras, intentar cargar contenido markdown para arrays
+      if (pageId === 'estructuras') {
+        try {
+          const arraysMarkdown = await loadMarkdownContent('arrays');
+          
+          if (arraysMarkdown) {
+            // Crear una copia de la página con el contenido markdown
+            const updatedPage = {
+              ...page,
+              sections: page.sections.map(section => {
+                if (section.id === 'arrays') {
+                  return {
+                    ...section,
+                    content: arraysMarkdown,
+                    source: 'markdown'
+                  };
+                }
+                return section;
+              })
+            };
+            return updatedPage;
+          }
+        } catch (error) {
+          console.warn('Error cargando markdown, usando contenido estático:', error);
+        }
       }
-    } else {
-      updatePageContentLocal(pageId, newPageContent);
-    }
-  };
+      
+      return page;
+    };
 
-  const updatePageContentLocal = (pageId, newPageContent) => {
-    setContent(prev => ({
-      ...prev,
-      pageContent: {
-        ...prev.pageContent,
-        [pageId]: newPageContent
-      }
-    }));
-  };
+    // Obtener página específica (versión síncrona para compatibilidad)
+    const getPage = (pageId) => pages.find(page => page.id === pageId);
 
-  const addNewPage = async (pageId, pageContent) => {
-    if (isBackendAvailable) {
-      try {
-        await cmsService.createPage({
-          id: pageId,
-          title: pageContent.title,
-          description: pageContent.description || '',
-          category_id: pageContent.category_id || '',
-          order_index: pageContent.order_index || 0
-        });
+    // Filtrar contenido por categoría
+    const getPagesByCategory = (categoryId) => 
+      pages
+        .filter(page => page.category === categoryId && page.is_active)
+        .sort((a, b) => a.order_index - b.order_index);
 
-        // Crear secciones si las hay
-        if (pageContent.sections && pageContent.sections.length > 0) {
-          for (const section of pageContent.sections) {
-            await cmsService.createSection({
-              id: section.id,
-              page_id: pageId,
+    // Obtener categorías activas
+    const getActiveCategories = () => 
+      categories
+        .filter(cat => cat.is_active)
+        .sort((a, b) => a.order_index - b.order_index);
+
+    // Buscar en contenido
+    const searchContent = (query) => {
+      if (!query || query.trim().length < 2) return [];
+      
+      const searchTerm = query.toLowerCase().trim();
+      const results = [];
+      
+      pages.forEach(page => {
+        if (!page.is_active) return;
+        
+        // Buscar en título y descripción de página
+        if (page.title.toLowerCase().includes(searchTerm) ||
+            page.description.toLowerCase().includes(searchTerm)) {
+          results.push({
+            type: 'page',
+            id: page.id,
+            title: page.title,
+            description: page.description,
+            category: page.category,
+            relevance: 0.8
+          });
+        }
+        
+        // Buscar en secciones
+        page.sections?.forEach(section => {
+          if (section.title.toLowerCase().includes(searchTerm) ||
+              section.content.toLowerCase().includes(searchTerm)) {
+            results.push({
+              type: 'section',
+              id: `${page.id}-${section.id}`,
               title: section.title,
-              content: section.content,
-              order_index: section.order_index || 0
+              description: page.title,
+              category: page.category,
+              pageId: page.id,
+              sectionId: section.id,
+              relevance: 0.6
             });
           }
-        }
-
-        await loadContent(); // Recargar desde backend
-      } catch (err) {
-        console.error('Error creating page:', err);
-        // Fallback: crear localmente
-        addNewPageLocal(pageId, pageContent);
-      }
-    } else {
-      addNewPageLocal(pageId, pageContent);
-    }
-  };
-
-  const addNewPageLocal = (pageId, pageContent) => {
-    setContent(prev => ({
-      ...prev,
-      pageContent: {
-        ...prev.pageContent,
-        [pageId]: pageContent
-      }
-    }));
-  };
-
-  const deletePage = async (pageId) => {
-    if (isBackendAvailable) {
-      try {
-        await cmsService.deletePage(pageId);
-        await loadContent(); // Recargar desde backend
-      } catch (err) {
-        console.error('Error deleting page:', err);
-        // Fallback: eliminar localmente
-        deletePageLocal(pageId);
-      }
-    } else {
-      deletePageLocal(pageId);
-    }
-  };
-
-  const deletePageLocal = (pageId) => {
-    setContent(prev => {
-      const newPageContent = { ...prev.pageContent };
-      delete newPageContent[pageId];
-      return {
-        ...prev,
-        pageContent: newPageContent
-      };
-    });
-  };
-
-  const addNavigationItem = async (sectionId, item) => {
-    // Esta función necesitaría implementación en el backend
-    // Por ahora mantener funcionalidad local
-    setContent(prev => ({
-      ...prev,
-      navigationSections: prev.navigationSections.map(section => 
-        section.id === sectionId 
-          ? { ...section, items: [...section.items, item] }
-          : section
-      )
-    }));
-  };
-
-  const removeNavigationItem = async (sectionId, itemId) => {
-    // Esta función necesitaría implementación en el backend
-    // Por ahora mantener funcionalidad local
-    setContent(prev => ({
-      ...prev,
-      navigationSections: prev.navigationSections.map(section => 
-        section.id === sectionId 
-          ? { ...section, items: section.items.filter(item => item.id !== itemId) }
-          : section
-      )
-    }));
-  };
-
-  const resetContent = async () => {
-    if (isBackendAvailable) {
-      try {
-        // El backend no tiene esta funcionalidad específica aún
-        // Por ahora solo limpiar local
-        localStorage.removeItem('cpc-cms-content');
-        await loadContent();
-      } catch (err) {
-        console.error('Error resetting content:', err);
-        resetContentLocal();
-      }
-    } else {
-      resetContentLocal();
-    }
-  };
-
-  const resetContentLocal = () => {
-    setContent(defaultContent);
-    localStorage.removeItem('cpc-cms-content');
-  };
-
-  const exportContent = async () => {
-    if (isBackendAvailable) {
-      try {
-        const exportData = await cmsService.exportContent();
-        
-        // Crear y descargar archivo
-        const dataStr = JSON.stringify(exportData, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `cpc-content-export-${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        console.error('Error exporting content:', err);
-        exportContentLocal();
-      }
-    } else {
-      exportContentLocal();
-    }
-  };
-
-  const exportContentLocal = () => {
-    const dataStr = JSON.stringify(content, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'cpc-content-export.json';
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const importContent = async (jsonContent) => {
-    try {
-      const parsedContent = JSON.parse(jsonContent);
-      
-      if (isBackendAvailable) {
-        try {
-          await cmsService.importContent(parsedContent);
-          await loadContent(); // Recargar desde backend
-          return { success: true };
-        } catch (err) {
-          console.error('Error importing to backend:', err);
-          // Fallback: importar localmente
-          setContent(parsedContent);
-          return { success: true };
-        }
-      } else {
-        setContent(parsedContent);
-        return { success: true };
-      }
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  };
-
-  // === FUNCIONES DE PROGRESO ===
-  const markProgress = async (pageId, sectionId = null) => {
-    try {
-      await progressService.markComplete({
-        page_id: pageId,
-        section_id: sectionId,
-        progress_data: { timestamp: new Date().toISOString() }
+        });
       });
-    } catch (err) {
-      console.warn('No se pudo guardar progreso en backend:', err.message);
-      // El progreso por cookies se maneja automáticamente por el backend
-    }
-  };
+      
+      return results.sort((a, b) => b.relevance - a.relevance);
+    };
 
-  const value = {
-    content,
-    loading,
-    error,
-    isBackendAvailable,
-    
-    // Funciones de gestión (admin)
-    updatePageContent,
-    addNewPage,
-    deletePage,
-    addNavigationItem,
-    removeNavigationItem,
-    resetContent,
-    exportContent,
-    importContent,
-    
-    // Funciones de progreso
-    markProgress,
-    
-    // Función para recargar contenido
-    reloadContent: loadContent
-  };
+    return {
+      pages,
+      categories,
+      isLoading,
+      error: null,
+      getPage,
+      getPageWithMarkdown,
+      getPagesByCategory,
+      getActiveCategories,
+      searchContent,
+      loadMarkdownContent
+    };
+  }, [isLoading, loadMarkdownContent]);
 
   return (
-    <ContentContext.Provider value={value}>
+    <ContentContext.Provider value={contextValue}>
       {children}
     </ContentContext.Provider>
   );

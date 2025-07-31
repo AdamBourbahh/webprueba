@@ -1,5 +1,3 @@
-import BackgroundEffects from './BackgroundEffects';
-
 const Noticias = () => {
   const noticias = [
     {
@@ -56,62 +54,56 @@ const Noticias = () => {
   };
 
   return (
-    <section className="min-h-screen relative overflow-hidden px-4 sm:px-6 lg:px-8 py-20">
-      <BackgroundEffects intensity="subtle" />
-
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-light text-black dark:text-pure-white leading-tight mb-6 drop-shadow-sm">
-            Noticias y eventos
-          </h1>
-          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 font-light max-w-3xl mx-auto">
-            Mantente al día con las últimas noticias, logros y eventos del Club de Programación Competitiva UGR
-          </p>
-        </div>
-
-        {/* News Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {noticias.map((noticia) => (
-            <article 
-              key={noticia.id}
-              className="bg-gray-50/70 dark:bg-gray-900/40 backdrop-blur-sm rounded-lg p-6 hover:bg-gray-100/70 dark:hover:bg-gray-800/50 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg"
-            >
-              <div className="mb-4">
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-light ${categoriaColors[noticia.categoria]}`}>
-                  {noticia.categoria}
-                </span>
-              </div>
-              
-              <h2 className="text-xl font-light text-black dark:text-pure-white mb-3 leading-tight">
-                {noticia.titulo}
-              </h2>
-              
-              <p className="text-gray-600 dark:text-gray-300 font-light text-sm mb-4 leading-relaxed">
-                {noticia.resumen}
-              </p>
-              
-              <div className="flex justify-between items-center">
-                <time className="text-xs text-gray-500 dark:text-gray-400 font-light">
-                  {noticia.fecha}
-                </time>
-                <button className="text-warm-orange dark:text-warm-pink hover:text-warm-red dark:hover:text-warm-orange transition-colors duration-200 text-sm font-light">
-                  Leer más →
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {/* Load More Button */}
-        <div className="text-center mt-12">
-          <button className="bg-gray-100/70 dark:bg-gray-800/50 hover:bg-warm-orange/20 dark:hover:bg-white/10 text-black dark:text-pure-white px-8 py-3 rounded-lg font-light transition-all duration-300 backdrop-blur-sm">
-            Cargar más noticias
-          </button>
-        </div>
+    <>
+      <div className="text-center mb-16">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-light text-black dark:text-pure-white leading-tight mb-6 drop-shadow-sm">
+          Noticias y eventos
+        </h1>
+        <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 font-light max-w-3xl mx-auto">
+          Mantente al día con las últimas noticias, logros y eventos del Club de Programación Competitiva UGR
+        </p>
       </div>
-    </section>
+
+      {/* News Grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {noticias.map((noticia) => (
+          <article 
+            key={noticia.id}
+            className="bg-gray-50/70 dark:bg-gray-900/40 backdrop-blur-sm rounded-lg p-6 hover:bg-gray-100/70 dark:hover:bg-gray-800/50 transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg"
+          >
+            <div className="mb-4">
+              <span className={`inline-block px-3 py-1 rounded-full text-xs font-light ${categoriaColors[noticia.categoria]}`}>
+                {noticia.categoria}
+              </span>
+            </div>
+            
+            <h2 className="text-xl font-light text-black dark:text-pure-white mb-3 leading-tight">
+              {noticia.titulo}
+            </h2>
+            
+            <p className="text-gray-600 dark:text-gray-300 font-light text-sm mb-4 leading-relaxed">
+              {noticia.resumen}
+            </p>
+            
+            <div className="flex justify-between items-center">
+              <time className="text-xs text-gray-500 dark:text-gray-400 font-light">
+                {noticia.fecha}
+              </time>
+              <button className="text-warm-orange dark:text-warm-pink hover:text-warm-red dark:hover:text-warm-orange transition-colors duration-200 text-sm font-light">
+                Leer más →
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {/* Load More Button */}
+      <div className="text-center mt-12">
+        <button className="bg-gray-100/70 dark:bg-gray-800/50 hover:bg-warm-orange/20 dark:hover:bg-white/10 text-black dark:text-pure-white px-8 py-3 rounded-lg font-light transition-all duration-300 backdrop-blur-sm">
+          Cargar más noticias
+        </button>
+      </div>
+    </>
   );
 };
 

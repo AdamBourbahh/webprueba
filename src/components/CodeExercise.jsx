@@ -1,153 +1,113 @@
-import { useState, useEffect } from 'react';
-import { Play, CheckCircle, XCircle, Clock, AlertCircle, Code, Trophy } from 'lucide-react';
-import { codeService } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import { useState, useMemo } from 'react';
+import { Play, CheckCircle, XCircle, Clock, AlertCircle, Code } from 'lucide-react';
 
-const CodeExercise = ({ exerciseId, embedded = false }) => {
-  const { isAuthenticated } = useAuth();
-  const [exercise, setExercise] = useState(null);
-  const [code, setCode] = useState('');
+// Datos optimizados de ejercicios
+const EXERCISES = {
+  'hello-world': {
+    id: 'hello-world',
+    title: 'Hello World',
+    description: 'Escribe un programa que imprima "Hello World!" en la consola.',
+    difficulty: 'easy',
+    timeLimit: 1,
+    memoryLimit: 128,
+    testCases: [
+      {
+        input: '',
+        expectedOutput: 'Hello World!',
+        description: 'Debe imprimir exactamente "Hello World!"'
+      }
+    ],
+    starterCode: '#include <iostream>\nusing namespace std;\n\nint main() {\n    // Tu código aquí\n    return 0;\n}'
+  },
+  'sum-two-numbers': {
+    id: 'sum-two-numbers',
+    title: 'Suma de Dos Números',
+    description: 'Lee dos números enteros y muestra su suma.',
+    difficulty: 'easy',
+    timeLimit: 1,
+    memoryLimit: 128,
+    testCases: [
+      {
+        input: '5 3',
+        expectedOutput: '8',
+        description: 'Suma de 5 + 3'
+      },
+      {
+        input: '10 -2',
+        expectedOutput: '8',
+        description: 'Suma con números negativos'
+      }
+    ],
+    starterCode: '#include <iostream>\nusing namespace std;\n\nint main() {\n    int a, b;\n    cin >> a >> b;\n    // Tu código aquí\n    return 0;\n}'
+  }
+};
+
+const DIFFICULTY_STYLES = {
+  easy: 'text-green-600 bg-green-100 dark:bg-green-900/20',
+  medium: 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20',
+  hard: 'text-red-600 bg-red-100 dark:bg-red-900/20'
+};
+
+const STATUS_CONFIG = {
+  accepted: { icon: CheckCircle, text: 'Aceptado', color: 'text-green-500' },
+  wrong_answer: { icon: XCircle, text: 'Respuesta incorrecta', color: 'text-red-500' },
+  time_limit: { icon: Clock, text: 'Tiempo límite excedido', color: 'text-yellow-500' },
+  runtime_error: { icon: AlertCircle, text: 'Error en tiempo de ejecución', color: 'text-red-500' },
+  compile_error: { icon: AlertCircle, text: 'Error de compilación', color: 'text-red-500' },
+  pending: { icon: Clock, text: 'En cola...', color: 'text-blue-500 animate-spin' },
+  running: { icon: Clock, text: 'Ejecutando...', color: 'text-blue-500 animate-spin' }
+};
+
+const CodeExercise = ({ exerciseId = 'hello-world', embedded = false }) => {
+  const exercise = EXERCISES[exerciseId] || EXERCISES['hello-world'];
+  const [code, setCode] = useState(exercise.starterCode || '');
   const [language, setLanguage] = useState('cpp');
   const [submission, setSubmission] = useState(null);
-  const [submissionId, setSubmissionId] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
 
-  // Cargar ejercicio
-  useEffect(() => {
-    loadExercise();
-  }, [exerciseId]);
-
-  // Polling para submissions en progreso
-  useEffect(() => {
-    if (submissionId && submission?.status === 'pending') {
-      const interval = setInterval(checkSubmissionStatus, 2000);
-      return () => clearInterval(interval);
-    }
-  }, [submissionId, submission?.status]);
-
-  const loadExercise = async () => {
-    try {
-      setLoading(true);
-      const data = await codeService.getExercise(exerciseId);
-      setExercise(data);
-      setCode(data.starter_code || '');
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const checkSubmissionStatus = async () => {
-    if (!submissionId) return;
-
-    try {
-      const data = await codeService.getSubmission(submissionId);
-      setSubmission(data);
-
-      if (data.status !== 'pending' && data.status !== 'running') {
-        setSubmissionId(null); // Detener polling
-      }
-    } catch (err) {
-      console.error('Error checking submission:', err);
-    }
-  };
-
-  const handleSubmit = async () => {
+  // Simulación optimizada de ejecución
+  const executeCode = async () => {
     if (!code.trim()) {
       alert('Por favor escribe algo de código antes de enviar');
       return;
     }
 
-    try {
-      setSubmitting(true);
-      setError(null);
+    setSubmitting(true);
+    
+    // Simular procesamiento mínimo
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-      const response = await codeService.submitCode({
-        exercise_id: exerciseId,
-        code: code,
-        language: language
-      });
-
-      setSubmissionId(response.submissionId);
-      setSubmission({ status: 'pending', id: response.submissionId });
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'accepted':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'wrong_answer':
-        return <XCircle className="h-5 w-5 text-red-500" />;
-      case 'time_limit':
-        return <Clock className="h-5 w-5 text-yellow-500" />;
-      case 'runtime_error':
-      case 'compile_error':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
-      case 'pending':
-      case 'running':
-        return <Clock className="h-5 w-5 text-blue-500 animate-spin" />;
-      default:
-        return <Code className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
-  const getStatusText = (status) => {
-    const statusMap = {
-      'accepted': 'Aceptado',
-      'wrong_answer': 'Respuesta incorrecta',
-      'time_limit': 'Tiempo límite excedido',
-      'runtime_error': 'Error en tiempo de ejecución',
-      'compile_error': 'Error de compilación',
-      'pending': 'En cola...',
-      'running': 'Ejecutando...'
+    // Validación simple basada en contenido
+    const isCorrect = exerciseId === 'hello-world' 
+      ? code.includes('Hello World') 
+      : code.includes('a+b') || code.includes('a + b');
+    
+    const result = {
+      id: `demo-${Date.now()}`,
+      status: isCorrect ? 'accepted' : 'wrong_answer',
+      executionTime: Math.random() * 100 + 50,
+      testResults: {
+        passed: isCorrect ? exercise.testCases.length : 0,
+        total: exercise.testCases.length,
+        details: exercise.testCases.map(() => ({
+          status: isCorrect ? 'accepted' : 'wrong_answer',
+          executionTime: Math.random() * 50 + 10
+        }))
+      }
     };
-    return statusMap[status] || status;
+
+    setSubmission(result);
+    setSubmitting(false);
   };
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'easy': return 'text-green-600 bg-green-100 dark:bg-green-900/20';
-      case 'medium': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20';
-      case 'hard': return 'text-red-600 bg-red-100 dark:bg-red-900/20';
-      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/20';
-    }
+  const StatusIcon = ({ status }) => {
+    const config = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+    const Icon = config.icon;
+    return <Icon className={`h-5 w-5 ${config.color}`} />;
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-warm-orange"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-        <div className="flex items-center space-x-2">
-          <AlertCircle className="h-5 w-5 text-red-500" />
-          <span className="text-red-700 dark:text-red-300">Error: {error}</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!exercise) {
-    return (
-      <div className="p-6 text-center text-gray-500 dark:text-gray-400">
-        Ejercicio no encontrado
-      </div>
-    );
-  }
+  const getStatusText = (status) => STATUS_CONFIG[status]?.text || status;
+  const getDifficultyStyle = (difficulty) => DIFFICULTY_STYLES[difficulty] || DIFFICULTY_STYLES.easy;
 
   return (
     <div className={`${embedded ? '' : 'max-w-6xl mx-auto p-6'} space-y-6`}>
@@ -159,65 +119,58 @@ const CodeExercise = ({ exerciseId, embedded = false }) => {
               {exercise.title}
             </h1>
             <div className="flex items-center space-x-4 text-sm">
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(exercise.difficulty)}`}>
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyStyle(exercise.difficulty)}`}>
                 {exercise.difficulty}
               </span>
               <span className="text-gray-600 dark:text-gray-400">
-                Límite: {exercise.time_limit}s, {exercise.memory_limit}MB
+                Límite: {exercise.timeLimit}s, {exercise.memoryLimit}MB
               </span>
-              {exercise.solved && (
-                <div className="flex items-center space-x-1 text-green-600">
-                  <Trophy className="h-4 w-4" />
-                  <span className="text-xs">Resuelto</span>
-                </div>
-              )}
+              <span className="text-blue-600 dark:text-blue-400 text-xs">
+                Modo Demo
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="prose prose-gray dark:prose-invert max-w-none">
-          <p className="text-gray-700 dark:text-gray-300 font-light leading-relaxed">
-            {exercise.description}
-          </p>
-        </div>
+        <p className="text-gray-700 dark:text-gray-300 font-light leading-relaxed mb-6">
+          {exercise.description}
+        </p>
 
-        {/* Test cases públicos */}
-        {exercise.testCases && exercise.testCases.length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-lg font-light text-black dark:text-white mb-3">
-              Ejemplos:
-            </h3>
-            <div className="space-y-3">
-              {exercise.testCases.map((testCase, index) => (
-                <div key={index} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                        Entrada:
-                      </div>
-                      <pre className="text-sm bg-white dark:bg-gray-900 p-2 rounded border">
-                        {testCase.input || '(sin entrada)'}
-                      </pre>
+        {/* Test cases */}
+        <div>
+          <h3 className="text-lg font-light text-black dark:text-white mb-3">
+            Ejemplos:
+          </h3>
+          <div className="space-y-3">
+            {exercise.testCases.map((testCase, index) => (
+              <div key={index} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                      Entrada:
                     </div>
-                    <div>
-                      <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                        Salida esperada:
-                      </div>
-                      <pre className="text-sm bg-white dark:bg-gray-900 p-2 rounded border">
-                        {testCase.expected_output}
-                      </pre>
-                    </div>
+                    <pre className="text-sm bg-white dark:bg-gray-900 p-2 rounded border">
+                      {testCase.input || '(sin entrada)'}
+                    </pre>
                   </div>
-                  {testCase.description && (
-                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                      {testCase.description}
+                  <div>
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                      Salida esperada:
                     </div>
-                  )}
+                    <pre className="text-sm bg-white dark:bg-gray-900 p-2 rounded border">
+                      {testCase.expectedOutput}
+                    </pre>
+                  </div>
                 </div>
-              ))}
-            </div>
+                {testCase.description && (
+                  <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    {testCase.description}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Editor y resultados */}
@@ -250,22 +203,22 @@ const CodeExercise = ({ exerciseId, embedded = false }) => {
 
           <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              {isAuthenticated ? 'Listo para enviar' : 'Inicia sesión para guardar tu progreso'}
+              Modo demostración - Ejecución simulada
             </div>
             <button
-              onClick={handleSubmit}
+              onClick={executeCode}
               disabled={submitting || !code.trim()}
               className="flex items-center space-x-2 bg-warm-orange hover:bg-warm-red text-white px-6 py-2 rounded-lg font-light transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <>
                   <Clock className="h-4 w-4 animate-spin" />
-                  <span>Enviando...</span>
+                  <span>Ejecutando...</span>
                 </>
               ) : (
                 <>
                   <Play className="h-4 w-4" />
-                  <span>Ejecutar</span>
+                  <span>Ejecutar (Demo)</span>
                 </>
               )}
             </button>
@@ -278,91 +231,47 @@ const CodeExercise = ({ exerciseId, embedded = false }) => {
             Resultados
           </h3>
 
-          {!submission && (
+          {!submission ? (
             <div className="text-center text-gray-500 dark:text-gray-400 py-8">
               <Code className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>Ejecuta tu código para ver los resultados</p>
+              <p>Ejecuta tu código para ver los resultados simulados</p>
             </div>
-          )}
-
-          {submission && (
+          ) : (
             <div className="space-y-4">
               {/* Estado general */}
               <div className="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                {getStatusIcon(submission.status)}
+                <StatusIcon status={submission.status} />
                 <div>
                   <div className="font-medium text-black dark:text-white">
                     {getStatusText(submission.status)}
                   </div>
-                  {submission.execution_time && (
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Tiempo: {submission.execution_time.toFixed(2)}ms
-                    </div>
-                  )}
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Tiempo: {submission.executionTime.toFixed(2)}ms (simulado)
+                  </div>
                 </div>
               </div>
 
               {/* Resultados de test cases */}
-              {submission.test_results && submission.test_results.testResults && (
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Test cases ({submission.test_results.summary?.passed || 0}/{submission.test_results.summary?.total || 0}):
-                  </div>
-                  {submission.test_results.testResults.map((result, index) => (
-                    <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
-                      {getStatusIcon(result.status)}
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        Test {index + 1}: {getStatusText(result.status)}
-                      </span>
-                      {result.executionTime && (
-                        <span className="text-xs text-gray-500">
-                          ({result.executionTime}ms)
-                        </span>
-                      )}
-                    </div>
-                  ))}
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Test cases ({submission.testResults.passed}/{submission.testResults.total}):
                 </div>
-              )}
-
-              {/* Errores */}
-              {submission.test_results && submission.test_results.error && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                  <div className="text-sm text-red-700 dark:text-red-300 font-mono">
-                    {submission.test_results.error}
+                {submission.testResults.details.map((result, index) => (
+                  <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
+                    <StatusIcon status={result.status} />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Test {index + 1}: {getStatusText(result.status)}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      ({result.executionTime.toFixed(1)}ms)
+                    </span>
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* Historial de submissions (solo si está autenticado) */}
-      {isAuthenticated && exercise.userSubmissions && exercise.userSubmissions.length > 0 && (
-        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg border border-gray-200/50 dark:border-gray-700/50 p-6">
-          <h3 className="text-lg font-light text-black dark:text-white mb-4">
-            Tus envíos recientes
-          </h3>
-          <div className="space-y-2">
-            {exercise.userSubmissions.map((sub) => (
-              <div key={sub.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  {getStatusIcon(sub.status)}
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {getStatusText(sub.status)}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-                  {sub.execution_time && (
-                    <span>{sub.execution_time.toFixed(2)}ms</span>
-                  )}
-                  <span>{new Date(sub.submitted_at).toLocaleString()}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
